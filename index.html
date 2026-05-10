@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NodMap — A map that thinks with you and remembers you.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #6BA8D6;
+    --sky-deep: #4A8AB8;
+    --sky-soft: #E8F0F7;
+    --stone: #6E7480;
+    --stone-soft: #ABB0B7;
+    --signal: #FF6A1A;
+    --signal-soft: #FFE8DA;
+    --pine: #1F3A2E;
+    --paper: #FAF8F4;
+    --paper-deep: #F2EFE8;
+    --ink: #1B2128;
+    --ink-soft: #4B5563;
+    --line: rgba(27, 33, 40, 0.08);
+    --line-strong: rgba(27, 33, 40, 0.16);
+
+    --font-display: 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --max: 1240px;
+    --pad: clamp(20px, 4vw, 56px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 248, 244, 0.86);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 18px var(--pad);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo-lockup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-lockup svg { display: block; }
+  .logo-lockup .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--stone);
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links .nav-cta {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    transition: transform 120ms ease, background 120ms ease;
+  }
+  .nav-links .nav-cta:hover { background: var(--pine); transform: translateY(-1px); }
+  @media (max-width: 720px) {
+    .nav-links a:not(.nav-cta) { display: none; }
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    padding: clamp(48px, 7vw, 96px) var(--pad) clamp(60px, 8vw, 120px);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -240px;
+    right: -160px;
+    width: 720px;
+    height: 720px;
+    background: radial-gradient(circle, rgba(107, 168, 214, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: clamp(40px, 5vw, 72px);
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+  @media (max-width: 960px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 56px; }
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px 7px 10px;
+    background: var(--sky-soft);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--sky-deep);
+    margin-bottom: 28px;
+    text-transform: uppercase;
+  }
+  .eyebrow .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--signal);
+    border-radius: 50%;
+  }
+
+  h1.hero-title {
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+  h1.hero-title .accent {
+    color: var(--sky-deep);
+    font-style: italic;
+    font-weight: 500;
+  }
+  .hero-sub {
+    font-size: clamp(17px, 1.5vw, 20px);
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 540px;
+    margin-bottom: 36px;
+  }
+  .hero-cta-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 44px;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 28px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 15px;
+    transition: transform 150ms ease, background 150ms ease;
+  }
+  .btn-primary:hover { background: var(--pine); transform: translateY(-2px); }
+  .btn-primary svg { width: 16px; height: 16px; }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 28px;
+    color: var(--ink);
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 15px;
+    border: 1px solid var(--line-strong);
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  .btn-secondary:hover { background: var(--paper-deep); border-color: var(--ink); }
+
+  .hero-meta {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .hero-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-meta-item .check {
+    width: 16px; height: 16px;
+    color: var(--sky-deep);
+  }
+
+  /* ===== HERO MOCKS ===== */
+  .mock-stage {
+    position: relative;
+    height: 580px;
+    min-width: 0;
+  }
+  .mock-stage .phone {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 2;
+  }
+  .mock-stage .browser {
+    position: absolute;
+    right: 0;
+    top: 60px;
+    z-index: 1;
+  }
+  @media (max-width: 540px) {
+    .mock-stage { height: auto; display: flex; justify-content: center; align-items: flex-end; }
+    .mock-stage .phone { position: static; }
+  }
+
+  /* Phone frame */
+  .phone {
+    position: relative;
+    width: clamp(220px, 25vw, 280px);
+    aspect-ratio: 9 / 19;
+    background: #0F1419;
+    border-radius: 44px;
+    padding: 12px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 30px 60px -20px rgba(15, 20, 25, 0.4),
+      0 8px 24px -10px rgba(15, 20, 25, 0.3);
+    flex-shrink: 0;
+    z-index: 2;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92px;
+    height: 26px;
+    background: #0F1419;
+    border-radius: 14px;
+    z-index: 3;
+  }
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    background: var(--paper);
+    border-radius: 32px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    font-family: var(--font-display);
+  }
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  /* App header */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px 16px;
+  }
+  .app-greeting {
+    font-size: 15px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .app-greeting .small {
+    font-size: 11px;
+    color: var(--stone);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 1px;
+  }
+  .app-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--sky-soft);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sky-deep);
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  /* Map area */
+  .map-area {
+    flex: 1;
+    background: linear-gradient(135deg, #DCE7DC 0%, #C8D5C5 60%, #B5C2B0 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .map-area::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.5) 0%, transparent 40%),
+      radial-gradient(ellipse at 70% 80%, rgba(94, 117, 89, 0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(168, 188, 158, 0.4) 0%, transparent 40%);
+  }
+  .map-area svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .you-pin {
+    position: absolute;
+    top: 39%;
+    left: 36%;
+    width: 14px;
+    height: 14px;
+    background: var(--signal);
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 6px rgba(255, 106, 26, 0.2);
+    z-index: 2;
+  }
+
+  /* AI conversation card */
+  .conv-card {
+    position: absolute;
+    bottom: 16px;
+    left: 14px;
+    right: 14px;
+    background: var(--paper);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.6) inset,
+      0 12px 32px -12px rgba(15, 20, 25, 0.18),
+      0 0 0 0.5px rgba(15, 20, 25, 0.05);
+    z-index: 5;
+  }
+  .conv-query {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.4;
+    padding: 8px 12px;
+    background: var(--sky-soft);
+    border-radius: 12px;
+    border-bottom-left-radius: 4px;
+    display: inline-block;
+    max-width: 90%;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .conv-thinking {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--stone);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .conv-thinking .pulse {
+    width: 6px;
+    height: 6px;
+    background: var(--signal);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  .conv-result {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid var(--line);
+  }
+  .conv-result-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .conv-result-stats {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+  }
+  .conv-result-stats span strong { color: var(--ink); font-weight: 600; }
+  .conv-result-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--signal-soft);
+    color: var(--signal);
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 4px;
+  }
+
+  /* Web preview frame */
+  .browser {
+    width: clamp(380px, 36vw, 460px);
+    background: var(--paper);
+    border-radius: 14px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.6) inset,
+      0 30px 80px -30px rgba(15, 20, 25, 0.3),
+      0 1px 0 rgba(15, 20, 25, 0.05);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  @media (max-width: 1100px) {
+    .browser { display: none; }
+  }
+  @media (max-width: 540px) {
+    .phone { width: 280px; }
+  }
+  .browser-bar {
+    background: #ECE9E2;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .browser-dots {
+    display: flex;
+    gap: 5px;
+  }
+  .browser-dots span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.15);
+  }
+  .browser-url {
+    flex: 1;
+    background: rgba(255,255,255,0.6);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--stone);
+    font-family: var(--font-mono);
+  }
+  .browser-content {
+    aspect-ratio: 16 / 11;
+    background: linear-gradient(135deg, #DCE7DC 0%, #C8D5C5 60%, #B5C2B0 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .browser-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 25% 30%, rgba(255,255,255,0.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 75% 70%, rgba(94, 117, 89, 0.3) 0%, transparent 50%);
+  }
+  .browser-sidebar {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 44%;
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 8px 24px -8px rgba(15, 20, 25, 0.18);
+    z-index: 5;
+  }
+  .browser-sidebar h4 {
+    font-size: 11px;
+    color: var(--stone);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .browser-sidebar .browser-query {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ink);
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .browser-sidebar .route-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+  .browser-sidebar .route-info span {
+    display: flex;
+    justify-content: space-between;
+  }
+  .browser-sidebar .route-info strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .browser-pin {
+    position: absolute;
+    top: 38%;
+    left: 47%;
+    width: 12px;
+    height: 12px;
+    background: var(--signal);
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px rgba(255, 106, 26, 0.2);
+  }
+
+  /* Map paths */
+  .map-path {
+    fill: none;
+    stroke: var(--signal);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 0;
+    filter: drop-shadow(0 1px 2px rgba(255, 106, 26, 0.3));
+  }
+  .map-trail {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.6);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 1, 4;
+  }
+
+  /* ===== SECTION SHARED ===== */
+  section {
+    padding: clamp(60px, 8vw, 120px) var(--pad);
+    position: relative;
+  }
+  .section-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+  }
+  .section-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--signal);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: clamp(32px, 4.5vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 20px;
+    max-width: 720px;
+  }
+  .section-title .accent { color: var(--sky-deep); font-style: italic; font-weight: 500; }
+  .section-sub {
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 620px;
+  }
+
+  /* ===== PHASES SECTION ===== */
+  .phases {
+    background: white;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .phases-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 56px;
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 880px) {
+    .phases-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .phases-grid { grid-template-columns: 1fr; }
+  }
+  .phase {
+    padding: 36px 28px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    transition: background 200ms ease;
+  }
+  .phase:hover { background: var(--paper); }
+  .phase:last-child { border-right: none; }
+  @media (max-width: 880px) {
+    .phase:nth-child(2) { border-right: none; }
+  }
+  @media (max-width: 480px) {
+    .phase { border-right: none; }
+  }
+  .phase-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--stone);
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+  .phase-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 16px;
+    color: var(--sky-deep);
+  }
+  .phase h3 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  .phase p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  /* ===== PRINCIPLES SECTION ===== */
+  .principles {
+    background: var(--ink);
+    color: var(--paper);
+    position: relative;
+    overflow: hidden;
+  }
+  .principles::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(107, 168, 214, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .principles .section-title { color: var(--paper); }
+  .principles .section-title .accent { color: var(--sky); }
+  .principles .section-sub { color: rgba(250, 248, 244, 0.7); }
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 64px;
+  }
+  @media (max-width: 880px) {
+    .principles-grid { grid-template-columns: 1fr; gap: 28px; }
+  }
+  .principle {
+    padding: 32px 28px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    transition: transform 200ms ease, background 200ms ease;
+  }
+  .principle:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+  }
+  .principle-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--sky);
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+  }
+  .principle h3 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    color: var(--paper);
+    line-height: 1.2;
+  }
+  .principle p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(250, 248, 244, 0.65);
+  }
+
+  /* ===== FAMILY SECTION ===== */
+  .family {
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .family-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 5vw, 80px);
+    align-items: center;
+  }
+  @media (max-width: 960px) {
+    .family-inner { grid-template-columns: 1fr; gap: 60px; }
+  }
+  .family-quote {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.5vw, 30px);
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-style: italic;
+    font-weight: 400;
+    margin-top: 32px;
+    padding-left: 24px;
+    border-left: 2px solid var(--signal);
+  }
+  .family-quote span { color: var(--stone); font-style: normal; font-size: 14px; display: block; margin-top: 12px; letter-spacing: 0; }
+  .family-mock {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid var(--line);
+    box-shadow: 0 30px 60px -30px rgba(15, 20, 25, 0.15);
+  }
+  .family-mock h4 {
+    font-size: 12px;
+    color: var(--stone);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-bottom: 18px;
+  }
+  .family-member {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .family-member:last-of-type { border-bottom: none; }
+  .family-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .family-avatar.mom { background: #C84B6F; }
+  .family-avatar.dad { background: var(--sky-deep); }
+  .family-avatar.daughter { background: #5C9D7A; }
+  .family-avatar.son { background: #C68B3D; }
+  .family-info { flex: 1; min-width: 0; }
+  .family-info .name { font-weight: 600; font-size: 15px; color: var(--ink); }
+  .family-info .status { font-size: 12px; color: var(--ink-soft); margin-top: 2px; line-height: 1.4; }
+  .family-info .status .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
+  .family-info .status .dot.green { background: #5C9D7A; }
+  .family-info .status .dot.orange { background: var(--signal); }
+  .family-eta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+  .family-eta strong { color: var(--ink); font-size: 13px; display: block; }
+
+  /* ===== PRICING ===== */
+  .pricing {
+    background: white;
+    border-top: 1px solid var(--line);
+  }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 56px;
+  }
+  @media (max-width: 880px) {
+    .pricing-grid { grid-template-columns: 1fr; gap: 16px; }
+  }
+  .price-card {
+    padding: 36px 30px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    transition: transform 200ms ease, border-color 200ms ease;
+  }
+  .price-card:hover { transform: translateY(-2px); border-color: var(--line-strong); }
+  .price-card.featured {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .price-card.featured .price-name,
+  .price-card.featured .price-amount,
+  .price-card.featured .price-features li { color: var(--paper); }
+  .price-card.featured .price-tagline { color: rgba(250, 248, 244, 0.7); }
+  .price-card.featured .price-features li::before { color: var(--sky); }
+  .price-card.featured .price-cta { background: var(--paper); color: var(--ink); }
+  .price-card.featured .price-cta:hover { background: var(--sky-soft); }
+  .price-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: var(--signal);
+    color: white;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    align-self: flex-start;
+  }
+  .price-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .price-tagline {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    min-height: 36px;
+    line-height: 1.45;
+  }
+  .price-amount {
+    font-size: 44px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .price-amount .unit {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    margin-left: 4px;
+  }
+  .price-features {
+    list-style: none;
+    padding: 24px 0 32px;
+    margin: 0;
+    flex: 1;
+  }
+  .price-features li {
+    padding: 8px 0 8px 22px;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .price-features li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 12px;
+    height: 6px;
+    border-left: 2px solid var(--sky-deep);
+    border-bottom: 2px solid var(--sky-deep);
+    transform: rotate(-45deg);
+  }
+  .price-cta {
+    padding: 14px 20px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    transition: background 150ms ease;
+  }
+  .price-cta:hover { background: var(--pine); }
+
+  /* ===== WAITLIST FOOTER ===== */
+  .waitlist {
+    background: var(--paper-deep);
+    text-align: center;
+  }
+  .waitlist .section-inner { max-width: 720px; }
+  .waitlist .section-title { margin: 0 auto 24px; }
+  .waitlist .section-sub { margin: 0 auto 40px; }
+  .waitlist-form {
+    display: flex;
+    gap: 10px;
+    max-width: 480px;
+    margin: 0 auto;
+    background: white;
+    padding: 6px 6px 6px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    align-items: center;
+  }
+  .waitlist-form input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 12px 0;
+    color: var(--ink);
+  }
+  .waitlist-form input::placeholder { color: var(--stone-soft); }
+  .waitlist-form button {
+    padding: 12px 24px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 150ms ease;
+  }
+  .waitlist-form button:hover { background: var(--pine); }
+  .waitlist-meta {
+    margin-top: 24px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .waitlist-meta strong { color: var(--ink); font-weight: 600; }
+
+  footer {
+    padding: 32px var(--pad);
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .footer-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .footer-links {
+    display: flex;
+    gap: 24px;
+  }
+  .footer-links a:hover { color: var(--ink); }
+
+  /* Hero stagger animation */
+  .stagger > * {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fade-in 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 60ms; }
+  .stagger > *:nth-child(2) { animation-delay: 160ms; }
+  .stagger > *:nth-child(3) { animation-delay: 260ms; }
+  .stagger > *:nth-child(4) { animation-delay: 360ms; }
+  .stagger > *:nth-child(5) { animation-delay: 460ms; }
+  @keyframes fade-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .mock-stage { animation: float-in 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 200ms forwards; opacity: 0; }
+  @keyframes float-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Reveal on scroll */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Disable the hide-then-reveal effect for users who prefer reduced motion or when JS is disabled */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+  .no-js .reveal { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo-lockup" aria-label="NodMap home">
+      <svg width="28" height="34" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M 14 18 L 14 72 L 22 72 L 22 34 L 58 72 L 66 72 L 66 18 L 58 18 L 58 56 L 22 18 Z" fill="#6BA8D6"/>
+        <path d="M 40 4 L 44 45 L 40 82 L 36 45 Z" fill="#FF6A1A"/>
+        <circle cx="40" cy="45" r="3" fill="white"/>
+      </svg>
+      <span class="wordmark">NodMap</span>
+    </a>
+    <div class="nav-links">
+      <a href="#phases">Product</a>
+      <a href="#family">Family</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#waitlist" class="nav-cta">Get early access</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="stagger">
+      <div class="eyebrow">
+        <span class="dot"></span>
+        Coming to iOS · 2026
+      </div>
+      <h1 class="hero-title">A map that <span class="accent">thinks with you</span> and remembers you.</h1>
+      <p class="hero-sub">NodMap is the AI companion the outdoor world hasn't had yet. Tell it what you're looking for in plain language. Get answers it actually understood.</p>
+      <div class="hero-cta-row">
+        <a href="#waitlist" class="btn-primary">
+          Get early access
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+        <a href="#phases" class="btn-secondary">See how it works</a>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <svg class="check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l3 3 7-7"/></svg>
+          Local-first · your data stays yours
+        </div>
+        <div class="hero-meta-item">
+          <svg class="check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l3 3 7-7"/></svg>
+          Works offline · trail or trailhead
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO MOCK STAGE -->
+    <div class="mock-stage">
+      <!-- Phone -->
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><path d="M1 8h2v1H1zm3-2h2v3H4zm3-2h2v5H7zm3-2h2v7h-2z"/></svg>
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 4a8 8 0 0112 0M3 6a5 5 0 018 0M5.5 8a2 2 0 013 0"/></svg>
+              <svg width="20" height="10" viewBox="0 0 20 10" fill="none" stroke="currentColor" stroke-width="1"><rect x="1" y="2" width="16" height="6" rx="1.5"/><rect x="2.5" y="3.5" width="13" height="3" rx="0.5" fill="currentColor"/><rect x="18" y="4" width="1" height="2" fill="currentColor"/></svg>
+            </div>
+          </div>
+          <div class="app-header">
+            <div class="app-greeting">
+              <span class="small">Sunday morning</span>
+              Where to today?
+            </div>
+            <div class="app-avatar">JS</div>
+          </div>
+          <div class="map-area">
+            <svg viewBox="0 0 280 380" preserveAspectRatio="xMidYMid slice">
+              <!-- Background topo lines -->
+              <path class="map-trail" d="M -20 60 Q 50 40 130 80 T 280 70"/>
+              <path class="map-trail" d="M -20 110 Q 60 90 140 130 T 280 120"/>
+              <path class="map-trail" d="M -20 170 Q 70 150 150 180 T 280 165"/>
+              <path class="map-trail" d="M -20 240 Q 80 220 160 245 T 280 235"/>
+              <!-- Trail loop, more centered and proportioned -->
+              <path class="map-path" d="M 100 180 Q 75 150 85 110 Q 110 80 160 90 Q 200 100 200 145 Q 200 195 165 215 Q 130 230 100 180 Z" stroke-dasharray="2,3"/>
+              <!-- Active route segment, traveled portion -->
+              <path class="map-path" d="M 100 180 Q 88 162 88 135 Q 92 110 115 100" stroke-width="4"/>
+              <!-- Creek/water feature -->
+              <path d="M 30 145 Q 80 130 130 140 T 250 165" fill="none" stroke="#7DA5C7" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+              <!-- Trailhead marker -->
+              <circle cx="100" cy="180" r="5" fill="white" stroke="#1F3A2E" stroke-width="2"/>
+            </svg>
+            <div class="you-pin"></div>
+            <div class="conv-card">
+              <div class="conv-query">5-mile loop with morning sun, creek halfway, back before lunch</div>
+              <div class="conv-thinking">
+                <span class="pulse"></span>
+                NodMap suggests
+              </div>
+              <div class="conv-result">
+                <div class="conv-result-title">Saddle Loop via Creek Crossing</div>
+                <div class="conv-result-stats">
+                  <span><strong>5.2</strong> mi</span>
+                  <span><strong>620</strong> ft gain</span>
+                  <span><strong>2h 18m</strong></span>
+                </div>
+                <div>
+                  <span class="conv-result-tag">East-facing</span>
+                  <span class="conv-result-tag">Water at 2.6mi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Browser -->
+      <div class="browser">
+        <div class="browser-bar">
+          <div class="browser-dots"><span></span><span></span><span></span></div>
+          <div class="browser-url">nodmap.com/plan</div>
+        </div>
+        <div class="browser-content">
+          <svg viewBox="0 0 520 360" preserveAspectRatio="xMidYMid slice">
+            <path class="map-trail" d="M -20 60 Q 100 40 250 80 T 540 70"/>
+            <path class="map-trail" d="M -20 130 Q 120 110 270 140 T 540 130"/>
+            <path class="map-trail" d="M -20 200 Q 140 180 290 210 T 540 200"/>
+            <path class="map-trail" d="M -20 280 Q 160 260 310 285 T 540 280"/>
+            <!-- Trail loop, center-right where it will sit between phone overlap and sidebar -->
+            <path class="map-path" d="M 240 250 Q 200 215 210 165 Q 240 125 290 130 Q 335 135 335 195 Q 335 250 295 275 Q 260 295 240 250 Z" stroke-dasharray="2,3"/>
+            <!-- Active route segment -->
+            <path class="map-path" d="M 240 250 Q 220 225 220 195 Q 225 165 250 150" stroke-width="4"/>
+            <!-- Water -->
+            <path d="M 180 215 Q 240 200 300 215 T 420 235" fill="none" stroke="#7DA5C7" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+            <circle cx="240" cy="250" r="5" fill="white" stroke="#1F3A2E" stroke-width="2"/>
+          </svg>
+          <div class="browser-pin"></div>
+          <div class="browser-sidebar">
+            <h4>Today's plan</h4>
+            <p class="browser-query">"5-mile loop with morning sun, creek halfway, back before lunch"</p>
+            <div class="route-info">
+              <span><span>Distance</span><strong>5.2 mi</strong></span>
+              <span><span>Gain</span><strong>620 ft</strong></span>
+              <span><span>Sunrise</span><strong>6:47 AM</strong></span>
+              <span><span>Back by</span><strong>11:30 AM</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PHASES ============ -->
+<section class="phases" id="phases">
+  <div class="section-inner reveal">
+    <div class="section-eyebrow">The four phases</div>
+    <h2 class="section-title">Every trip has a <span class="accent">rhythm</span>. NodMap follows it.</h2>
+    <p class="section-sub">Most apps stop at the trailhead. NodMap walks the whole arc — from the question you have on Saturday morning to the photo you'll search for next October.</p>
+    <div class="phases-grid">
+      <div class="phase">
+        <div class="phase-num">01 / Plan</div>
+        <svg class="phase-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="16" cy="13" r="6"/>
+          <path d="M11 13a5 5 0 0010 0"/>
+          <path d="M16 21v6M11 27h10"/>
+        </svg>
+        <h3>Ask in plain language.</h3>
+        <p>Tell NodMap what you're looking for. Distance, terrain, time of day, water features — say it the way you'd say it to a friend.</p>
+      </div>
+      <div class="phase">
+        <div class="phase-num">02 / Go</div>
+        <svg class="phase-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M6 24l10-16 10 16M16 8v20"/>
+          <circle cx="16" cy="20" r="2" fill="currentColor"/>
+        </svg>
+        <h3>Quiet on the trail.</h3>
+        <p>Calm, only-when-needed alerts. Turn-around time. Off-route detection. No chatter when you're trying to be present.</p>
+      </div>
+      <div class="phase">
+        <div class="phase-num">03 / Remember</div>
+        <svg class="phase-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="6" y="8" width="20" height="18" rx="2"/>
+          <path d="M6 14h20M11 4v8M21 4v8"/>
+        </svg>
+        <h3>Trips that come back to you.</h3>
+        <p>Every walk auto-saved. Photos pinned to where you took them. Search "that overlook with the lone tree" and find it.</p>
+      </div>
+      <div class="phase">
+        <div class="phase-num">04 / Share</div>
+        <svg class="phase-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="10" cy="16" r="3"/>
+          <circle cx="22" cy="9" r="3"/>
+          <circle cx="22" cy="23" r="3"/>
+          <path d="M12.5 14.5l7-4M12.5 17.5l7 4"/>
+        </svg>
+        <h3>The people who care.</h3>
+        <p>Family knows where you are when you want them to. One tap pause. No silent shares. Trust without a leash.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRINCIPLES ============ -->
+<section class="principles" id="principles">
+  <div class="section-inner reveal">
+    <div class="section-eyebrow" style="color: var(--signal);">What makes it different</div>
+    <h2 class="section-title">Built around three commitments we won't <span class="accent">walk back</span>.</h2>
+    <p class="section-sub">Every product makes promises. Most don't keep them. These are the ones that determined what NodMap is — and what it isn't.</p>
+    <div class="principles-grid">
+      <div class="principle">
+        <div class="principle-num">01</div>
+        <h3>Your data stays yours.</h3>
+        <p>Local-first storage. Your trips live on your device. Cloud sync is opt-in and end-to-end encrypted. We can't read your data — and we sell it to no one.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-num">02</div>
+        <h3>Works where signal doesn't.</h3>
+        <p>The map renders, the AI thinks, your tracks save — even when the cell tower is two ridges away. Outdoor apps that require connectivity miss the point.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-num">03</div>
+        <h3>Asks instead of assumes.</h3>
+        <p>When NodMap doesn't know something, it tells you. When it makes a recommendation, it shows you why. No silent confidence. No hallucinated trail conditions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAMILY ============ -->
+<section class="family" id="family">
+  <div class="section-inner family-inner reveal">
+    <div>
+      <div class="section-eyebrow">NodMap Family</div>
+      <h2 class="section-title">For households who <span class="accent">adventure separately</span>.</h2>
+      <p class="section-sub">Different from Life360, on purpose. Family knows when your daughter is on track for her run. When your partner is ten minutes out from the trailhead. When someone needs help.</p>
+      <div class="family-quote">
+        Trip-aware ETAs, not just dots on a map. Emergency alerting with last-known GPS. Pause your sharing any time, no questions asked.
+        <span>— What Life360 won't build, because it would cost them ad revenue.</span>
+      </div>
+    </div>
+
+    <div class="family-mock">
+      <h4>Hulls Family · 4 members</h4>
+      <div class="family-member">
+        <div class="family-avatar mom">SH</div>
+        <div class="family-info">
+          <div class="name">Sarah</div>
+          <div class="status"><span class="dot green"></span>At Saddle Trailhead · started 47m ago</div>
+        </div>
+        <div class="family-eta">
+          <strong>11:24 AM</strong>
+          on track
+        </div>
+      </div>
+      <div class="family-member">
+        <div class="family-avatar dad">JH</div>
+        <div class="family-info">
+          <div class="name">James</div>
+          <div class="status"><span class="dot green"></span>Driving · 12 mi from Pinnacle</div>
+        </div>
+        <div class="family-eta">
+          <strong>10:48 AM</strong>
+          arrives
+        </div>
+      </div>
+      <div class="family-member">
+        <div class="family-avatar daughter">EH</div>
+        <div class="family-info">
+          <div class="name">Emma</div>
+          <div class="status"><span class="dot orange"></span>Sharing paused · until 2 PM</div>
+        </div>
+        <div class="family-eta">
+          <strong>—</strong>
+          paused
+        </div>
+      </div>
+      <div class="family-member">
+        <div class="family-avatar son">OH</div>
+        <div class="family-info">
+          <div class="name">Owen</div>
+          <div class="status"><span class="dot green"></span>Home · last update 4m ago</div>
+        </div>
+        <div class="family-eta">
+          <strong>—</strong>
+          home
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section class="pricing" id="pricing">
+  <div class="section-inner reveal">
+    <div class="section-eyebrow">Pricing</div>
+    <h2 class="section-title">Three tiers. <span class="accent">Honest math.</span></h2>
+    <p class="section-sub">No display ads. No data sales. Just the people who use NodMap paying for NodMap. Pro and Family include everything in Free.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">NodMap</div>
+        <div class="price-tagline">Help me find my way.</div>
+        <div class="price-amount">Free</div>
+        <ul class="price-features">
+          <li>Plain-language search & planning</li>
+          <li>2 saved offline regions</li>
+          <li>Last 30 trips remembered</li>
+          <li>25 AI queries / day</li>
+          <li>Single-trip share links</li>
+        </ul>
+        <a href="#waitlist" class="price-cta">Start free</a>
+      </div>
+      <div class="price-card featured">
+        <span class="price-badge">Most chosen</span>
+        <div class="price-name">NodMap Pro</div>
+        <div class="price-tagline">Help me adventure deeper.</div>
+        <div class="price-amount">$59<span class="unit">/year</span></div>
+        <ul class="price-features">
+          <li>Everything in Free</li>
+          <li>Unlimited offline regions</li>
+          <li>Unlimited trips remembered</li>
+          <li>Unlimited AI queries</li>
+          <li>Premium map layers</li>
+          <li>Apple Watch + Garmin companion</li>
+          <li>GPX / KML export</li>
+        </ul>
+        <a href="#waitlist" class="price-cta">Get Pro</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">NodMap Family</div>
+        <div class="price-tagline">Help me know they're safe.</div>
+        <div class="price-amount">$129<span class="unit">/year</span></div>
+        <ul class="price-features">
+          <li>Pro for up to 6 people</li>
+          <li>Live location + active trip view</li>
+          <li>Trip-aware ETAs against plan</li>
+          <li>Emergency alerting w/ last-known GPS</li>
+          <li>One-tap pause, always</li>
+          <li>No silent shares, ever</li>
+        </ul>
+        <a href="#waitlist" class="price-cta">Start a Family</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WAITLIST ============ -->
+<section class="waitlist" id="waitlist">
+  <div class="section-inner reveal">
+    <div class="section-eyebrow">Early access</div>
+    <h2 class="section-title">Be among the first to <span class="accent">try it</span>.</h2>
+    <p class="section-sub">NodMap launches on iOS in 2026, with Android following 4-6 months later. Early users get 12 months of Pro at no charge.</p>
+    <form class="waitlist-form" onsubmit="event.preventDefault(); this.querySelector('button').textContent='You\\'re on the list ✓';">
+      <input type="email" placeholder="you@email.com" required aria-label="Email address" />
+      <button type="submit">Join waitlist</button>
+    </form>
+    <p class="waitlist-meta">
+      <strong>~3,200 people</strong> on the list · iOS first · Built in Kansas City and the trailheads in between.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="logo-lockup" aria-label="NodMap">
+      <svg width="22" height="27" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M 14 18 L 14 72 L 22 72 L 22 34 L 58 72 L 66 72 L 66 18 L 58 18 L 58 56 L 22 18 Z" fill="#6BA8D6"/>
+        <path d="M 40 4 L 44 45 L 40 82 L 36 45 Z" fill="#FF6A1A"/>
+        <circle cx="40" cy="45" r="3" fill="white"/>
+      </svg>
+      <span class="wordmark" style="font-size: 16px;">NodMap</span>
+    </div>
+    <div>© 2026 NodMap, Inc.</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Press</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Reveal sections on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -10% 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Fallback: if a section is already in viewport on load, reveal immediately
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.reveal').forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight) el.classList.add('visible');
+    });
+  });
+</script>
+
+</body>
+</html>
